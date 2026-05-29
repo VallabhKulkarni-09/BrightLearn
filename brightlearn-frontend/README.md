@@ -1,167 +1,118 @@
-# BrightLearn LMS - Frontend Documentation
+# BrightLearn LMS - React Frontend Client
 
-This document provides a comprehensive technical overview of the BrightLearn Learning Management System (LMS) client-side application. It is designed to be easily parsed and understood by LLMs and human developers alike.
+This is the front-end application for the BrightLearn Learning Management System. It is built as a single-page application (SPA) using React, TypeScript, and Tailwind CSS, orchestrated by Vite.
 
 ---
 
-## 1. Technical Stack
+## Technical Stack
 
-*   **Build Tool / Bundler:** Vite
-*   **Library:** React 18 + TypeScript
-*   **Routing:** React Router DOM v6
-*   **Styling & UI:** Tailwind CSS v3 + CSS noise patterns
-*   **Animations:** Framer Motion (for page transitions, loading states, and modal overlays)
-*   **HTTP Client:** Axios (configured with interceptors for token refresh queueing)
+*   **Build Tool:** Vite
+*   **Core Library:** React 18 + TypeScript
+*   **Routing:** React Router DOM (v6)
+*   **Styling:** Tailwind CSS (v3)
+*   **Animations:** Framer Motion (page transitions, interactive alerts, and modal overlays)
+*   **HTTP Client:** Axios (configured with automated refresh token queueing)
 *   **Icons:** Lucide React
-*   **Feedback/Interactivity:** Canvas Confetti (celebrates course completion)
+*   **Extra Features:** Canvas Confetti (triggers on course completion)
 
 ---
 
-## 2. Directory & File Structure
+## Project Structure
 
-The project code is situated under `src/`:
+Our source files are organized under `src/`:
 
 ```text
 src/
+├── App.tsx                     # Entry component wrapping context and routes
+├── main.tsx                    # React DOM mount point
+├── index.css                   # Tailwind setup, animations, and custom glassmorphism styles
 │
-├── App.tsx                        # Root layout wrapping AuthProvider and AppRouter
-├── main.tsx                       # Main entry point rendering App in StrictMode
-├── index.css                      # Global styles, tailwind layers, animations, and dark glassmorphic utility classes
+├── components/                 # Reusable UI components
+│   ├── layout/                 # Structural page components
+│   ├── ui/                     # Basic design inputs (buttons, cards, spinners, toasts)
+│   ├── Navbar.tsx              # Dynamic navbar showing links based on role
+│   ├── Footer.tsx              # Site footer with platform links
+│   ├── CourseCard.tsx          # Card to display courses and progress bars
+│   ├── FeedbackModal.tsx       # Modal for users to submit feedback
+│   ├── ReviewModal.tsx         # Modal for students to submit course reviews
+│   └── LessonDiscussionPanel.tsx # Discussion comment thread for lessons
 │
-├── context/                       # React Contexts
-│   └── AuthContext.tsx            # Global authentication state, login, logout, and token refresh init
+├── context/                    # State management contexts
+│   └── AuthContext.tsx         # Manages logged-in user, login, logout, and token startup check
 │
-├── routes/                        # Application routing
-│   ├── AppRouter.tsx              # Router definition for public, private, and role-restricted routes
-│   └── RoleRoute.tsx              # HOC guarding page access based on user role
+├── hooks/                      # Custom hooks (e.g. useExample)
 │
-├── components/                    # Reusable UI widgets and layout structures
-│   ├── layout/                    # Global layouts
-│   ├── ui/                        # Common elements (Spinners, Buttons, Inputs)
-│   ├── Navbar.tsx                 # Responsive, role-aware top navigation bar
-│   ├── Footer.tsx                 # Consistent, premium page footer with site maps
-│   ├── CourseCard.tsx             # Renders course catalogs, progress bars, and CTAs
-│   ├── FeedbackModal.tsx          # Portal modal for student/instructor site feedback submission
-│   ├── ReviewModal.tsx            # Portal modal for course review star rating submissions
-│   └── LessonDiscussionPanel.tsx  # Nested comments list displaying current lesson discussions
-│
-├── pages/                         # Route components (Pages)
-│   ├── AboutPage.tsx              # Public statistics, platform features, and user guide
-│   ├── LoginPage.tsx              # Sign In interface with username/password
-│   ├── SignupPage.tsx             # Sign Up configuration with Role selectors
-│   ├── ProfilePage.tsx            # Self-profile edit and password management page
-│   ├── VerifyCertificatePage.tsx  # Public verification checker for certificates using UUID
+├── pages/                      # Page components mapped to router paths
+│   ├── LoginPage.tsx           # Login screen
+│   ├── SignupPage.tsx          # Signup screen with role selector
+│   ├── AboutPage.tsx           # Public platform details and stats
+│   ├── ProfilePage.tsx         # User settings and password updates
+│   ├── VerifyCertificatePage.tsx # Public certificate validator
 │   │
-│   ├── student/                   # Student layouts and dashboard
-│   │   ├── StudentDashboard.tsx   # Catalog of available and active enrolled courses, analytics charts
-│   │   ├── CourseDetailPage.tsx   # Content player (Video/Text) with quiz submission, discussions, and note-taking
-│   │   └── CertificatePage.tsx    # Beautiful certificate preview with PDF download trigger
+│   ├── student/                # Pages for student role
+│   │   ├── StudentDashboard.tsx   # Dashboard listing courses and analytics
+│   │   ├── CourseDetailPage.tsx   # Course player with lessons, notes, and quizzes
+│   │   └── CertificatePage.tsx    # Displays earned course certificates
 │   │
-│   ├── instructor/                # Instructor page views
-│   │   ├── InstructorDashboard.tsx# Course management, funnel analytics, and creation forms
-│   │   └── LessonManagementPage.tsx# Reorderable, editable lists of lessons and quizzes under a course
+│   ├── instructor/             # Pages for instructor role
+│   │   ├── InstructorDashboard.tsx # Course creation and stats
+│   │   └── LessonManagementPage.tsx # Lesson/quiz ordering and editing
 │   │
-│   └── admin/                     # System administrator pages
-│       └── AdminDashboard.tsx     # User management (roles, toggle status), audit logging tables, and feedback views
+│   └── admin/                  # Pages for administrator role
+│       └── AdminDashboard.tsx     # User list, role manager, audit logs, and feedback list
 │
-├── services/                      # Axios API service integrations
-│   ├── api.ts                     # Main Axios instance, interceptors, and queueing logic
-│   ├── authService.ts             # Auth REST mappings (me, change-password, reset-password)
-│   └── [Resource]Service.ts       # Specific API endpoints (courses, lessons, notes, enrollments)
+├── routes/                     # Router configurations
+│   ├── AppRouter.tsx           # Page mappings and fallback redirects
+│   └── RoleRoute.tsx           # Route guard protecting routes based on roles
 │
-├── types/                         # TypeScript interfaces
-│   └── index.ts                   # Core interfaces (User, Course, Lesson, Enrollment, Comments, Logs)
+├── services/                   # API interaction services
+│   ├── api.ts                  # Axios client with interceptors
+│   └── *Service.ts             # REST service calls grouped by feature
 │
-└── utils/                         # Utility helpers
-    └── tokenManager.ts            # Helper storing Access Token in-memory
+├── types/                      # TypeScript definitions (index.ts)
+│
+└── utils/                      # Internal helpers
+    └── tokenManager.ts         # Holds the current access token in memory
 ```
 
 ---
 
-## 3. Core Architectural flows
+## Token & Session Architecture
 
-### 3.1 Advanced Authentication Flow
+To prevent XSS (Cross-Site Scripting) attacks, we do not store the short-lived JSON Web Token (JWT) in local storage:
 
-BrightLearn uses a hybrid storage scheme for optimal security:
-*   **Access Token (JWT):** Kept exclusively in-memory (inside `tokenManager.ts`) to mitigate XSS (Cross-Site Scripting).
-*   **Refresh Token (UUID/JWT):** Stored in `localStorage` to persist sessions.
-
-#### Axios Interceptor Queueing Logic
-The application utilizes an Axios HTTP interceptor in `src/services/api.ts` to manage token expirations transparently:
-
-```text
-HTTP Request (Access Token Attached)
-           │
-           ▼
-[API Server returns 401 Unauthorized]
-           │
-           ▼
- Is token refresh already in progress?
-       ├──► YES: Put request in promise queue (failedQueue), wait
-       │
-       └──► NO: Lock queue (isRefreshing = true), trigger POST /auth/refresh
-                  │
-                  ├───► Refresh Success: Update tokens, release queue with new token, retry original request
-                  └───► Refresh Failed: Clear localStorage, redirect to /login, clear queue
-```
-
-### 3.2 Role-Based Routing (`RoleRoute`)
-
-Protected routes are wrapped inside `<RoleRoute allowedRoles={['...']}>` inside [AppRouter.tsx](file:///c:/Users/vallabh.kulakarni1/project/brightlearn-frontend/src/routes/AppRouter.tsx).
-
-```text
-               Visitor Access Path
-                       │
-                       ▼
-            Are they logged in?
-               ├──► NO: Redirect to /login
-               │
-               └──► YES: Check role in User Profile (ADMIN, INSTRUCTOR, STUDENT)
-                            │
-                            ├───► Role is in allowedRoles: Render Component
-                            └───► Role is NOT in allowedRoles: Redirect to '/' (default dashboard)
-```
+1.  **Access Token:** Kept in memory inside the `tokenManager.ts` utility file.
+2.  **Refresh Token:** Kept in `localStorage` so sessions persist when the browser tab is closed.
+3.  **Axios Interceptor (`api.ts`):** 
+    If an API request returns a `401 Unauthorized` status code, the interceptor intercepts the response:
+    *   It blocks further requests and queues them up.
+    *   It requests a new access token from `/auth/refresh` using the stored refresh token.
+    *   If the refresh is successful, it updates the stored token, executes the queued requests, and unblocks the client.
+    *   If the refresh fails, it clears local storage and redirects the user to the login screen.
 
 ---
 
-## 4. UI/UX Design System & Aesthetics
+## Routing & Guards
 
-*   **Layout:** Responsive flex/grid system leveraging Tailwind CSS.
-*   **Dark Mode / Futuristic Aesthetic:** Glassmorphism headers using CSS drop-shadow filters (`backdrop-blur-md`, custom gradients).
-*   **Noise Texture:** Overlay background style classes configured in `index.css` to add subtle textures.
-*   **Micro-interactions:** Framer motion controls:
-    *   `<motion.div>` overlays with `initial={{ opacity: 0 }}` and `animate={{ opacity: 1 }}` for layout changes.
-    *   Hover scale effects on buttons, interactive grids, and card components.
-*   **Confetti Celebration:** Executed on `CourseDetailPage` immediately when progress changes from < 100% to 100%.
+The application uses dynamic redirects to match the logged-in user's role:
+*   Unauthenticated users are directed to the login page.
+*   Once logged in, users are routed to their designated home bases:
+    *   `ADMIN` users are redirected to `/admin`.
+    *   `INSTRUCTOR` users are redirected to `/instructor`.
+    *   `STUDENT` users are redirected to `/student`.
+*   All dashboards, profile settings, and lesson pages are wrapped in `<RoleRoute>` guards to prevent unauthorized path access.
 
 ---
 
-## 5. Local Setup & Build
+## Running the Application Locally
 
-### Prerequisites
-*   Node.js 18.x or higher
-*   npm 9.x or higher
-
-### Environment Setup
-Create a `.env` file in the root directory `brightlearn-frontend/`:
-```env
-VITE_API_BASE_URL=http://localhost:8080
-```
-
-### Running Locally
-Run using `npm.cmd` on Windows (or standard `npm` on POSIX systems):
-```powershell
-# Install dependencies
-npm.cmd install
-
-# Run the development server
-npm.cmd run dev
-```
-The server will boot up and default to `http://localhost:5173`.
-
-### Production Build
-Verify typescript and compile optimized build assets:
-```powershell
-npm.cmd run build
-```
-Build files will be generated under `dist/` directory.
+1. Create a `.env` file in the root of `brightlearn-frontend/`:
+   ```env
+   VITE_API_BASE_URL=http://localhost:8080
+   ```
+2. Install node modules and run the development command:
+   ```bash
+   npm install
+   npm run dev
+   ```
+3. Open `http://localhost:5173` in your browser.
