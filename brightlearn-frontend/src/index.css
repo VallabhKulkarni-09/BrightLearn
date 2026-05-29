@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+  color: #000000;
+  background-color: #fafafa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #fafafa;
+  overflow-x: hidden;
+}
+
+/* Base styles for cinematic feel */
+.bg-noise {
+  position: relative;
+}
+
+.bg-noise::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.bg-grid {
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.04) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+/* Layered Blur System */
+.glass {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Typography Hierarchy */
+.text-display {
+  @apply font-bold tracking-tighter leading-tight;
+}
+
+.text-meta {
+  @apply text-[10px] uppercase tracking-[0.2em] font-semibold text-neutral-400;
+}
+
+/* Motion Primitives */
+.stagger-load > * {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Skeleton Shimmer */
+.skeleton {
+  @apply bg-neutral-100 relative overflow-hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Markdown Design System */
+.markdown-content {
+  @apply text-neutral-800 leading-relaxed;
+}
+
+.markdown-content h1 { @apply text-4xl font-black mb-8 mt-12 tracking-tighter text-black; }
+.markdown-content h2 { @apply text-2xl font-bold mb-6 mt-10 tracking-tight text-black; }
+.markdown-content h3 { @apply text-xl font-bold mb-4 mt-8 tracking-tight text-black; }
+.markdown-content p { @apply mb-6; }
+.markdown-content ul { @apply list-disc list-inside mb-6 space-y-2; }
+.markdown-content ol { @apply list-decimal list-inside mb-6 space-y-2; }
+.markdown-content li { @apply pl-2; }
+.markdown-content code { @apply bg-neutral-100 text-black px-1.5 py-0.5 rounded font-mono text-sm; }
+.markdown-content pre { @apply bg-neutral-900 rounded-2xl p-6 mb-8 overflow-x-auto border border-black/5 shadow-elevated; }
+.markdown-content pre code { @apply bg-transparent p-0 text-neutral-200; }
+.markdown-content a { @apply text-black font-bold underline underline-offset-4 decoration-1 hover:decoration-2 transition-all; }
+.markdown-content img { @apply rounded-3xl shadow-ambient my-12 w-full object-cover; }
+.markdown-content blockquote { @apply border-l-4 border-black pl-6 italic my-8 text-neutral-500; }
+
+/* Smooth Scrolling (Native fallback if lenis is absent) */
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: rgba(0, 0, 0, 0.08);
+  color: #000;
+}

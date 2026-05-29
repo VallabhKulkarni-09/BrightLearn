@@ -1,0 +1,5 @@
+# Root-level ignore pattern
+error.log
+temp_login.json
+.metadata/
+.vscode/
